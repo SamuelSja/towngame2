@@ -1,3 +1,5 @@
+
+pub mod asset_consts;
 pub mod gui;
 pub mod buildings;
 pub mod systems;

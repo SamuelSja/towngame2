@@ -1,5 +1,4 @@
 
-pub mod asset_consts;
 pub mod buildings;
 pub mod enemies;
 pub mod systems;

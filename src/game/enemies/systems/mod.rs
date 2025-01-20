@@ -4,7 +4,7 @@ pub mod helper;
 use bevy::{math::VectorSpace, prelude::*};
 use helper::{spawn_enemy, spawn_enemy_around};
 
-use crate::{all::{buildings::{self, components::{BaseBuilding, BaseBuildingGame, Town}}, helper::{did_collide, restrict_transform_movement}, resources::Gold, BUILDABLE_SIZE, TILE_SIZE}, game::{events::NextRound, resources::Round}};
+use crate::{all::{asset_consts::ENEMY_ATTACK_SOUNDS, buildings::{self, components::{BaseBuilding, BaseBuildingGame, Town}}, helper::{did_collide, restrict_transform_movement}, resources::Gold, BUILDABLE_SIZE, TILE_SIZE}, game::{events::NextRound, resources::Round}};
 use super::components::{self, Attack, Base, Drops, Enemy};
 
 type EMove = components::Move;
@@ -68,10 +68,12 @@ pub fn restrict_enemy_movement (
 }
 
 pub fn hurt_building (
+    mut coms: Commands,
     mut enemy_q: Query<(&Transform, &mut Attack)>,
     mut buildings_q: Query<(&Children, &mut BaseBuilding, &Transform)>,
     mut base_game_q: Query<&mut BaseBuildingGame>,
     time: Res<Time>,
+    assets: Res<AssetServer>,
 ) {
 
 
@@ -80,6 +82,8 @@ pub fn hurt_building (
 
 
         if attack.cur_reload <= 0.0 {
+
+            'build_loop:
             for (children, mut base, building_transform) in buildings_q.iter_mut() {
                 for &child in children.iter() { if let Ok(mut base_game) = base_game_q.get_mut(child) {
                     if ! base_game.alive() {
@@ -88,6 +92,16 @@ pub fn hurt_building (
                     if did_collide(enemy_transform.translation, TILE_SIZE, building_transform.translation, TILE_SIZE) {
                         base_game.health -= attack.damage;
                         attack.cur_reload += attack.reload;
+
+                        coms.spawn((
+                            AudioPlayer::new(assets.load(ENEMY_ATTACK_SOUNDS[0])),
+                            PlaybackSettings::DESPAWN,
+                        ));
+
+                        break 'build_loop;
+
+
+
                     }
                 }}
             }

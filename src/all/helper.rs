@@ -121,3 +121,17 @@ pub fn enter_either<M>(app: &mut App, states: (AppState, AppState), system: impl
         }
     ))
 }
+
+
+pub fn play_sound(coms: &mut Commands, assets: &Res<AssetServer>, sound: &str) {
+    coms.spawn((
+        AudioPlayer::new(assets.load(sound)),
+        PlaybackSettings::DESPAWN,
+    ));
+}
+
+pub fn play_sounds(coms: &mut Commands, assets: &Res<AssetServer>, sounds: &[&str]) {
+    // Todo: random
+    let random = 0;
+    play_sound(coms, assets, sounds[random]);
+}

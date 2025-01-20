@@ -1,6 +1,6 @@
 use std::sync::Arc;
 
-use bevy::{color::palettes::css::BLUE, prelude::*};
+use bevy::{color::palettes::css::{BLUE, ORANGE, RED, YELLOW}, prelude::*};
 
 use super::build_comps::BuildingComponent;
 
@@ -83,9 +83,19 @@ impl Building {
             Self::None => {vec![]},
             Self::Archer => {vec![
                 BuildingComponent::Base { health: Arc::new(|l| { 50.0 * (1.5 as f32).powf(l as f32) }), building: self.clone(), level: 1 },
-                BuildingComponent::Ranged { range: Arc::new(|l| { 250.0 * (1.5 as f32).powf(l as f32) }), damage: Arc::new(|l| { 20.0 * (1.5 as f32).powf(l as f32 - 1.0) }), reload_time: Arc::new(|l| {
-                    1.0 * ((2.0 / 3.0) as f32).powf(l as f32 - 1.0)
-                }), bolt_color: Arc::new(|l| { BLUE }) },
+                BuildingComponent::Ranged { range: Arc::new(|l| { 250.0 + l as f32 * 5 as f32 }), damage: Arc::new(|l| { 20.0 * (1.5 as f32).powf(l as f32 - 1.0) }), reload_time: Arc::new(|l| {
+                    f32::log2(l as f32 + 4.0).powf(-1.0) + 0.5
+                }), bolt_color: Arc::new(|l| {
+                    if l < 5 {
+                        YELLOW
+                    } else if l < 10 {
+                        ORANGE
+                    } else if l < 15 {
+                        RED
+                    } else {
+                        BLUE
+                    }
+                }) },
                 BuildingComponent::Solid {},
                 BuildingComponent::Buyable { cost: Arc::new(|l| { (20.0 * l as f32) as u32 })},
             ]},

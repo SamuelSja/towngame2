@@ -4,7 +4,7 @@ pub mod helper;
 use bevy::{prelude::*, window::PrimaryWindow};
 use helper::{mouse_tile, place_single_building, sell};
 
-use crate::all::{buildings::{components::{BaseBuilding, Building, BuildingComponent}, systems::{building_at, entity_at, is_free, is_free_entity}}, resources::Gold, BUILDABLE_SIZE, TILE_SIZE};
+use crate::all::{asset_consts::{PLACE_SOUNDS, SELECT_SOUNDS}, buildings::{components::{BaseBuilding, Building, BuildingComponent}, systems::{building_at, entity_at, is_free, is_free_entity}}, helper::{play_sound, play_sounds}, resources::Gold, BUILDABLE_SIZE, TILE_SIZE};
 
 use super::{components::Highlight, gui::styles::LEFT_BAR_PAR, resources::{SelectType, Selected}};
 
@@ -25,6 +25,7 @@ pub fn clicked (
 ) {
     if let (Ok(window), Ok(camera)) = (window_q.get_single(), camera_q.get_single()) {
         let held = ! mouse_buttons.just_pressed(MouseButton::Left);
+        let shift = keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight);
         if mouse_buttons.just_pressed(MouseButton::Left) || mouse_buttons.pressed(MouseButton::Left) {
             if let Some(mut mouse_pos) = window.cursor_position() {
 
@@ -43,23 +44,27 @@ pub fn clicked (
                         if ! is_free_entity(&buildings_q, &tile) {
                             if ! held {
                                 selected.val = SelectType::Placed(vec![tile]);
-                                highlight(&mut coms, &assets, tile);
+                                select_building(&mut coms, &assets, tile);
                             }
                             return;
                         }
                         place_single_building(&mut coms, &assets, &building, tile, &mut gold);
+                        play_sounds(&mut coms, &assets, PLACE_SOUNDS);
                     },
                     SelectType::Placed(mut pos) => {
                         if/* ! held &&*/ ! is_free_entity(&buildings_q, &tile) {
-                            if ! (keyboard.pressed(KeyCode::ShiftLeft) || keyboard.pressed(KeyCode::ShiftRight)) {
+                            if ! shift && ! held {
                                 // Note: Clear placed queue
                                 pos.clear();
                                 clear_highlight(&mut coms, &highlights_q);
                             }
 
-                            if ! pos.contains(&tile) {
-                                pos.insert(0, tile);
-                                highlight(&mut coms, &assets, tile);
+                            // Note do select without shift when held
+                            if shift || ! held {
+                                if ! pos.contains(&tile) {
+                                    pos.insert(0, tile);
+                                    select_building(&mut coms, &assets, tile);
+                                }
                             }
 
                             selected.val = SelectType::Placed(pos);
@@ -81,7 +86,7 @@ pub fn clicked (
                         if ! is_free_entity(&buildings_q, &tile) {
                             if ! held {
                                 selected.val = SelectType::Placed(vec![tile]);
-                                highlight(&mut coms, &assets, tile);
+                                select_building(&mut coms, &assets, tile);
                             }
                         }
                     }
@@ -91,6 +96,12 @@ pub fn clicked (
             }
         }
     }
+}
+
+/// pos is the tile location. highlight combined with play sounds
+pub fn select_building(coms: &mut Commands, assets: &Res<AssetServer>, pos: Vec2) {
+    highlight(coms, &assets, pos);
+    play_sounds(coms, &assets, SELECT_SOUNDS);
 }
 
 /// pos is the tile location

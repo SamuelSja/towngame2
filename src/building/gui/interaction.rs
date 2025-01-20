@@ -1,6 +1,6 @@
 use bevy::{input::mouse::{MouseScrollUnit, MouseWheel}, prelude::*, window::PrimaryWindow};
 
-use crate::{all::{buildings::{components::{BaseBuilding, Building}, systems::{at, building_at, comp_at, comp_at_mut, entity_at}}, resources::Gold}, building::{self, clear_highlight, components::Highlight, gui::SCROLL_DIST, helper::{self, mouse_tile}, resources::{SelectType, Selected}}};
+use crate::{all::{asset_consts::{SELECT_SOUNDS, SELL_SOUNDS, UPGRADE_BUILDING_SOUNDS}, buildings::{components::{BaseBuilding, Building}, systems::{at, building_at, comp_at, comp_at_mut, entity_at}}, helper::play_sounds, resources::Gold}, building::{self, clear_highlight, components::Highlight, gui::SCROLL_DIST, helper::{self, mouse_tile}, resources::{SelectType, Selected}}};
 use super::{components::*, insert_labels, insert_shop_data, insert_shop_data_level};
 
 pub fn scroll (
@@ -48,12 +48,18 @@ pub fn select (
     buttons_q: Query<(&ShopBuilding, &Interaction), (Changed<Interaction>, With<ShopButton>)>,
     highlights_q: Query<Entity, With<Highlight>>,
     mut selected: ResMut<Selected>,
+    assets: Res<AssetServer>,
 ) {
     for (building, interaction) in buttons_q.iter() {
         match interaction {
             Interaction::Pressed => {
                 selected.val = SelectType::Placing(building.building.clone());
                 clear_highlight(&mut coms, &highlights_q);
+                println!("select");
+                coms.spawn((
+                    AudioPlayer::new(assets.load(SELECT_SOUNDS[0])),
+                    PlaybackSettings::DESPAWN,
+                ));
             },
             _ => {}
         }
@@ -149,11 +155,16 @@ pub fn sell (
     highlights_q: Query<Entity, With<Highlight>>,
     mut selected: ResMut<Selected>,
     mut gold: ResMut<Gold>,
+    assets: Res<AssetServer>,
 ) {
     for interaction in buttons_q.iter() {
         match interaction {
             Interaction::Pressed => {
                 if let SelectType::Placed(tiles) = &selected.val {
+
+                    if ! tiles.is_empty() {
+                        play_sounds(&mut coms, &assets, SELL_SOUNDS);
+                    }
 
                     for tile in tiles {
                         helper::sell(&mut coms, &buildings_q, &mut gold, *tile);
@@ -172,10 +183,12 @@ pub fn sell (
 }
 
 pub fn upgrade (
+    mut coms: Commands,
     mut buildings_q: Query<(&Transform, &mut BaseBuilding)>,
     buttons_q: Query<&Interaction, (Changed<Interaction>, With<UpgradeButton>)>,
     selected: ResMut<Selected>,
     mut gold: ResMut<Gold>,
+    assets: Res<AssetServer>,
 
 ) {
     for interaction in buttons_q.iter() {
@@ -211,7 +224,10 @@ pub fn upgrade (
 
                         for building in buildings.iter_mut() {
                             building.level_up(1);
+
                         }
+
+                        play_sounds(&mut coms, &assets, UPGRADE_BUILDING_SOUNDS);
                     } 
                 }
             },

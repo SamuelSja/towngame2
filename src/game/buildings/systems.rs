@@ -4,7 +4,7 @@ use std::{i32, usize};
 
 use bevy::prelude::*;
 
-use crate::{all::{buildings::{components::{BaseBuilding, BaseBuildingGame, BuildComponent, HealthBarBack, HealthBarFront, Ranged, RangedGame, Town}, systems::insert_health_bar}, BLANK_IMAGE, TILE_SIZE}, game::{asset_consts::LASER_SOUNDS, enemies::components::{Base, Enemy}, events::NextRound, next_round, resources::Round}};
+use crate::{all::{asset_consts::LASER_SOUNDS, buildings::{components::{BaseBuilding, BaseBuildingGame, BuildComponent, HealthBarBack, HealthBarFront, Ranged, RangedGame, Town}, systems::insert_health_bar}, BLANK_IMAGE, TILE_SIZE}, game::{enemies::components::{Base, Enemy}, events::NextRound, next_round, resources::Round}};
 
 use super::components::Bolt;
 
@@ -110,6 +110,7 @@ pub fn building_range_attack (
                     let y = enemy.translation.y - building.translation.y;
                     (y / x).atan()
                 });
+
                 coms.spawn((
                     Sprite {
                         image: assets.load(BLANK_IMAGE),
