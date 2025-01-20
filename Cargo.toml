@@ -1,0 +1,10 @@
+[package]
+name = "town_game2"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+bevy = { version = "0.15.0", features = ["mp3"] }
+rand = "0.8.5"
+serde_json = "1.0.133"
+serde = {features = ["derive"], version = "1.0.204"}
