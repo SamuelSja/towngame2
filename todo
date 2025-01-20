@@ -4,15 +4,18 @@
 
 
 
+work on next:
+    game slowing down when firing
 
 
-
-What to work on next:
+todo: 
 * game is slowing down when widow is not in focus
 * Something gave an error when deleating. "should only have tile when in focus" the issue might have been that The building was behind the sell button, but I do not know.
 * when enemies have high speed they can go through the wall
 * buildings look weird when they respawn
 * game slowing down when firing
+* music
+* remove print statements
 
 
 
